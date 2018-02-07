@@ -1,31 +1,40 @@
-students = [
-  {name: "Dr. Hannibal Lecter", cohort: "november"},
-  {name: "Darth Vader", cohort: "november"},
-  {name: "Nurse Ratched", cohort: "november"},
-  {name: "Michael Corleone", cohort: "november"},
-  {name: "Alex Delarge", cohort: "november"},
-  {name: "The Wicked Witch of the West", cohort: "november"},
-  {name: "Terminator", cohort: "november"},
-  {name: "Freddy Krueger", cohort: "november"},
-  {name: "The Joker", cohort: "november"},
-  {name: "Joffrey Baratheon", cohort: "november"},
-  {name: "Norman Bates", cohort: "november"}]
+def student_input
+  puts "This program will ask you to enter student names and"
+  puts "cohort months until you type in 'stop'"
+  puts "------------------------------------\n\n"
+
+  students = []
+  stu_name = ""
+  stu_cohort = ""
+
+  until stu_name.downcase == "stop" || stu_cohort.downcase == "stop"
+    puts "Enter a name to add to the cohort."
+    stu_name = gets.chomp
+    puts "Enter a cohort month."
+    stu_cohort = gets.chomp
+    students.push({name: stu_name, cohort: stu_cohort}) if (stu_name.downcase != "stop" && stu_cohort.downcase != "stop")
+  end
+  students
+end
 
 # puts a list of all the students
 def print_header
-  puts "The students of Villain Academy"
-  puts "-------------------------------"
+  puts "\nThe students of Villain Academy"
+  puts "-------------------------------\n"
 end
 
-def print(stu_names)
-  stu_names.each { |student| puts "#{student[:name]} (#{student[:cohort]} cohort)" }
+def print(students)
+  students.each { |student|
+    puts "#{student[:name]} (#{student[:cohort]} cohort)"
+  }
 end
 
 # print/puts how many students we have
-def print_footer(names)
-  puts "Overall we have #{names.count} great students."
+def print_footer(students)
+  puts "Overall we have #{students.count} great students."
 end
 
+students = student_input
 print_header
 print(students)
 print_footer(students)
