@@ -82,8 +82,8 @@ def print_directory(print_options)
   when "ALL"
     # For each entry in the students argument (student array from above),
     # puts the student details, preceded by the index value + 1.
-    $students.each { |student, index|
-      puts "Name: #{student[:name]}; Cohort: #{student[:cohort]}; Hobbies: #{student[:hobbies]}"
+    $students.each { |student|
+      puts "Name: #{student[:name]}, Cohort: #{student[:cohort]}, Hobbies: #{student[:hobbies]}"
     }
 
     # Set &let_count = -1 so that the filter settings messages in print_footer
@@ -97,9 +97,9 @@ def print_directory(print_options)
 
       # For each entry in the students argument (student array from student_input),
       # puts the student details, preceded by the index value + 1.
-      $students.each { |student, index|
+      $students.each { |student|
         if student[:name][0].upcase == letter.upcase
-          puts "Name: #{student[:name]}; Cohort: #{student[:cohort]}; Hobbies: #{student[:hobbies]}"
+          puts "Name: #{student[:name]}, Cohort: #{student[:cohort]}, Hobbies: #{student[:hobbies]}"
 
           # Increase &let_count by one for each successful output
           $let_count += 1
@@ -113,9 +113,9 @@ def print_directory(print_options)
 
       # For each entry in the students argument (student array from student_input),
       # puts the student details, preceded by the index value + 1.
-      $students.each { |student, index|
+      $students.each { |student|
         if student[:name].length <= name_length
-          puts "Name: #{student[:name]}; Cohort: #{student[:cohort]}; Hobbies: #{student[:hobbies]}"
+          puts "Name: #{student[:name]}, Cohort: #{student[:cohort]}, Hobbies: #{student[:hobbies]}"
 
           # Increase &let_count by one for each successful output
           $let_count += 1
@@ -129,9 +129,9 @@ def print_directory(print_options)
 
       # For each entry in the students argument (student array from student_input),
       # puts the student details, preceded by the index value + 1.
-      $students.each { |student, index|
+      $students.each { |student|
         if student[:cohort] == cohort
-          puts "Name: #{student[:name]}; Cohort: #{student[:cohort]}; Hobbies: #{student[:hobbies]}"
+          puts "Name: #{student[:name]}, Cohort: #{student[:cohort]}, Hobbies: #{student[:hobbies]}"
 
           # Increase &let_count by one for each successful output
           $let_count += 1
@@ -145,11 +145,11 @@ def print_directory(print_options)
       # check if the entry's :cohort value exists in the all_by_cohort Hash as a key.
       # If it doesn't exist, create an empty array. Then push a string containing
       # the name and hobbies of the student into that key.
-      $students.each { |student, index|
+      $students.each { |student|
         if all_by_cohort[student[:cohort]] == nil
           all_by_cohort[student[:cohort]] = []
         end # of if
-        all_by_cohort[student[:cohort]].push("Name: #{student[:name]}; Hobbies: #{student[:hobbies]}")
+        all_by_cohort[student[:cohort]].push("Name: #{student[:name]}, Hobbies: #{student[:hobbies]}")
       }
 
       # puts the values of each cohort-key values
@@ -177,6 +177,21 @@ def print_directory(print_options)
 
 end # of def
 
+def save_file
+  # Open the directory_file for writing (will be created if non-existent)
+  # CSV file type so no spaces between commas
+  directory_file = File.open("directory_file.csv", "w+")
+
+  # Write the column titles first
+  directory_file.puts "Name,Cohort,Hobbies"
+
+  # Iterate through all student data and write (puts) to file
+  $students.each { |student|
+    directory_file.puts "#{student[:name]},#{student[:cohort]},#{student[:hobbies]}"
+  }
+  directory_file.close
+end
+
 def delete_entry
 
 end
@@ -192,7 +207,7 @@ def interactive_entry
   user_input = ""
   while user_input.upcase != "EXIT"
     puts "\nEnter an action from the following options:"
-    puts "--ADD -> Add new entries to the directory"
+    puts "--ADD -> Add (and save) new entries to the directory"
     puts "--VIEW -> View the directory"
     puts "--REMOVE -> Remove entries from the directory"
     puts "--AMEND -> Amend an existing entry in the directory"
@@ -203,6 +218,7 @@ def interactive_entry
     case user_input.upcase
       when "ADD"
         student_input
+        save_file
 
       when "VIEW"
         print_options = print_directory_options
