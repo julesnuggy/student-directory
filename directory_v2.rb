@@ -2,7 +2,6 @@
 
 # Global variable declarations
 $students = [] # Array which will contain the data
-$let_count = 0 # Keeps track of how many students are output when filters are set
 $stu_num = 1 # Number displayed during user input to keep track of inputs
 
 # This allows the user to input values to variables and allowing them to
@@ -11,17 +10,42 @@ def gets_break
   print ">>" # This is just to make it clearer when/where they're inputting
   gets_var = gets.chomp
   if gets_var.upcase == "EXIT"
-    abort("---- PROGRAM ABORTED ----")
+    message_buffer("---- PROGRAM ABORTED ----")
+    abort()
   else
     gets_var
   end
 end
 
+def stu_push(array, name, cohort, hobbies)
+  array << {name: name, cohort: cohort, hobbies: hobbies}
+end
+
+# Places hyphen "buffers" above and below messages to make it clearer.
+# The message argument can be a string or an array
+# If string, buffer length == length of string
+# If array, buffer length == length of index arr_idx
+# Option to define if the top and bottom buffers have a central message
+def message_buffer(message, arr_idx = 0, top = "-", bottom = "-")
+  puts ""
+
+  if message.is_a? String
+    puts top.center(message.length, "-")
+    puts message
+    puts bottom.center(message.length, "-")
+
+  elsif message.is_a? Array
+    puts top.center(message[arr_idx].length, "-")
+    puts message
+    puts bottom.center(message[arr_idx].length, "-")
+  end
+end
+
 # Ask user to input student details to create a "database" (array of hashes)
 def student_input
-  puts "\nPlease enter the requested student details."
-  puts "To stop, provide a blank entry by pressing Enter for all options."
-  puts "-------------------------------------------------------------\n"
+
+  message = ["Please enter the requested student details", "To stop, provide a blank entry by pressing Enter for all options."]
+  message_buffer(message, 1)
 
   stu_name = stu_cohort = stu_hobbies = "" # Decalre variables
 
@@ -46,7 +70,7 @@ def student_input
     # For entries with at least one 'non-empty' input,
     # push a hash of these values into the students array
     unless (stu_name == "N/A" && stu_cohort == "N/A" && stu_hobbies == "N/A")
-      $students.push({name:stu_name, cohort:stu_cohort, hobbies:stu_hobbies})
+      stu_push($students, stu_name, stu_cohort, stu_hobbies)
       $stu_num += 1
     end
   end
@@ -71,11 +95,10 @@ def print_directory_options
 end
 
 def print_directory(print_options)
+  let_count = 0 # Keeps track of how many students are output when filters are set
   all_by_cohort = {} # Hash for ALL BY COHORT filter
 
-  puts "\n-------------------------------"
-  puts "The students of Villain Academy:"
-
+  message_buffer("The Student Directory of Villain Academy")
 
   # No filter - print all names
   case print_options.upcase
@@ -84,11 +107,10 @@ def print_directory(print_options)
     # puts the student details, preceded by the index value + 1.
     $students.each { |student|
       puts "Name: #{student[:name]}, Cohort: #{student[:cohort]}, Hobbies: #{student[:hobbies]}"
-    }
 
-    # Set &let_count = -1 so that the filter settings messages in print_footer
-    # is not displayed
-    $let_count = -1
+    # Set let_count = -1 so that the filter settings messages in print_footer is not displayed
+    let_count = -1
+    }
 
     # Filter setting to print only specific letter names
     when "LETTER"
@@ -101,8 +123,8 @@ def print_directory(print_options)
         if student[:name][0].upcase == letter.upcase
           puts "Name: #{student[:name]}, Cohort: #{student[:cohort]}, Hobbies: #{student[:hobbies]}"
 
-          # Increase &let_count by one for each successful output
-          $let_count += 1
+          # Increase let_count by one for each successful output
+          let_count += 1
         end # of if
       }
 
@@ -117,8 +139,8 @@ def print_directory(print_options)
         if student[:name].length <= name_length
           puts "Name: #{student[:name]}, Cohort: #{student[:cohort]}, Hobbies: #{student[:hobbies]}"
 
-          # Increase &let_count by one for each successful output
-          $let_count += 1
+          # Increase let_count by one for each successful output
+          let_count += 1
         end # of if
       }
 
@@ -133,8 +155,8 @@ def print_directory(print_options)
         if student[:cohort] == cohort
           puts "Name: #{student[:name]}, Cohort: #{student[:cohort]}, Hobbies: #{student[:hobbies]}"
 
-          # Increase &let_count by one for each successful output
-          $let_count += 1
+          # Increase let_count by one for each successful output
+          let_count += 1
         end # of if
       }
 
@@ -158,38 +180,91 @@ def print_directory(print_options)
         puts values
       }
 
-      # Set &let_count = -1 so that the filter settings messages in print_footer
+      # Set let_count = -1 so that the filter settings messages in print_footer
       # is not displayed
-      $let_count = -1
+      let_count = -1
     else
       puts "Please enter a valid option."
 
     end # of case
 
       # puts how many students there are in the directory
+      # Using ?: operator to control singular and plural states
       # For relevant filter options, show how many return from the search
       puts $students.count == 1 ? "\nIn total, we have #{$students.count} great student." : "\nIn total, we have #{$students.count} great students."
-      if $let_count >= 0
-        puts $let_count == 1 ? "Your filter settings display #{$let_count} student." : "Your filter settings display #{$let_count} students."
+      if let_count >= 0
+        puts let_count == 1 ? "Your filter settings display #{let_count} student." : "Your filter settings display #{let_count} students."
       end # of if
 
       puts "---- END ----\n\n"
 
 end # of def
 
-def save_file
+def save_file (save_to = "directory_file.csv")
   # Open the directory_file for writing (will be created if non-existent)
   # CSV file type so no spaces between commas
-  directory_file = File.open("directory_file.csv", "w+")
+  puts "Saving to default file 'directory_file.csv' - is that OK? [YES / NO]"
+  yes_no = gets.chomp
+  if yes_no.upcase == "NO"
+    puts "Enter filename (including filetype) to save:"
+    save_to = STDIN.gets.chomp
+  end
 
-  # Write the column titles first
-  directory_file.puts "Name,Cohort,Hobbies"
+  # if...else... loop to check if file exists or not
+  if File.exists?(save_to)
+    puts "Overwriting file #{save_to}"
+  else
+    puts "File does not exist. Creating new file in directory location: #{File.absolute_path(save_to)}"
+  end
 
-  # Iterate through all student data and write (puts) to file
-  $students.each { |student|
-    directory_file.puts "#{student[:name]},#{student[:cohort]},#{student[:hobbies]}"
-  }
-  directory_file.close
+    File.open(save_to, "w+") { |directory_file|
+      # Write the column titles first
+      directory_file.puts "Name,Cohort,Hobbies"
+
+      # Iterate through all student data and write (puts) to file
+      $students.each { |student|
+        directory_file.puts "#{student[:name]},#{student[:cohort]},#{student[:hobbies]}"
+      }
+
+      message_buffer("File #{save_to} saved successfully",0,"SAVED")
+
+    }
+
+
+end
+
+def load_file (load_from = "directory_file.csv")
+  # Open the directory_file for reading
+  # CSV file type so no spaces between commas
+  puts "Loading default file 'directory_file.csv' - is that OK? [YES / NO]"
+  yes_no = gets.chomp
+  if yes_no.upcase == "NO"
+    puts "Enter filename (including filetype) to load:"
+    load_from = STDIN.gets.chomp
+  end
+
+  # if...else... loop to check if file exists or not
+  if File.exists?(load_from)
+    File.open(load_from, "r") { |directory_file|
+
+      # Read all lines and for each one.
+      # Split the line at the comma so that we can assign them to their variable
+      # giving us an array with 3 elements).
+      # Create a new Hash and push it into the $students Array but exclude the column
+      # header title (hence the unless)
+      $students.clear
+      directory_file.readlines.each { |line|
+          name, cohort, hobbies = line.chomp.split(",")
+          stu_push($students, name, cohort, hobbies) unless name == "Name"
+      }
+
+      message_buffer("File #{load_from} loaded successfully",0,"LOADED")
+    }
+
+  else
+    message_buffer("The file #{load_from} does not exist.",0,"ERROR")
+
+  end
 end
 
 def delete_entry
@@ -207,8 +282,10 @@ def interactive_entry
   user_input = ""
   while user_input.upcase != "EXIT"
     puts "\nEnter an action from the following options:"
-    puts "--ADD -> Add (and save) new entries to the directory"
+    puts "--ADD -> Create new entries to add to the directory"
     puts "--VIEW -> View the directory"
+    puts "--SAVE -> Save the current list to the directory"
+    puts "--LOAD -> Load the last saved list"
     puts "--REMOVE -> Remove entries from the directory"
     puts "--AMEND -> Amend an existing entry in the directory"
     puts "--EXIT -> Exit the program"
@@ -218,11 +295,16 @@ def interactive_entry
     case user_input.upcase
       when "ADD"
         student_input
-        save_file
 
       when "VIEW"
         print_options = print_directory_options
         print_directory(print_options)
+
+      when "SAVE"
+        save_file
+
+      when "LOAD"
+        load_file
 
       when "REMOVE"
 
